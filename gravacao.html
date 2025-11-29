@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bracel Celulares - Personalize</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Playwrite+CZ:wght@100..400&family=Poppins:wght@300;400;600&family=Roboto+Slab:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #1a1a1a;
+            --accent-color: #000000;
+            --gray-light: #e0e0e0;
+            --gray-text: #666666;
+            --transition: all 0.3s ease;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+	    align-items: center;
+	    justify-content: center;
+        }
+
+        /* --- Header --- */
+        header {
+            padding: 20px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fff;
+
+        }
+        .logo { font-weight: 700; font-size: 1.4rem; letter-spacing: -0.5px; text-transform: uppercase; }
+
+        /* --- View Management --- */
+        .view {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 20px;
+            animation: fadeIn 0.5s ease forwards;
+        }
+        .view.active { display: flex; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Landing Page --- */
+        #landing { text-align: center; max-width: 600px; margin-top: 40px; }
+        h1 { font-size: 2.5rem; margin-bottom: 20px; line-height: 1.1; letter-spacing: -1px; }
+        p.subtitle { color: var(--gray-text); font-size: 1.1rem; margin-bottom: 40px; }
+        
+        .btn-cta {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 16px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .btn-cta:hover { transform: scale(1.05); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+
+        /* --- App Container --- */
+        #app-container {
+            display: none;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            flex-direction: column;
+            padding-top: 20px;
+        }
+
+        /* --- Progress Bar --- */
+        .progress-wrapper { width: 100%; margin-bottom: 40px; padding: 0 20px; }
+        .progress-label { text-align: right; font-size: 0.8rem; color: var(--gray-text); margin-bottom: 8px; }
+        .progress-track { height: 4px; background: var(--gray-light); width: 100%; border-radius: 2px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--accent-color); width: 0%; transition: width 0.5s ease; }
+
+        /* --- Steps Grid --- */
+        .step-title { font-size: 1.5rem; margin-bottom: 30px; text-align: center; }
+        .grid-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 20px;
+            width: 100%;
+            justify-items: center;
+        }
+
+        .card {
+            background: white;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+            max-width: 220px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+        .card img { width: 100%; height: 180px; object-fit: contain; border-radius: 8px; margin-bottom: 10px; }
+        .card span { display: block; font-size: 0.9rem; font-weight: 600; }
+        .card:hover { transform: translateY(-5px); }
+        .card.selected { border-color: var(--accent-color); box-shadow: 0 10px 20px rgba(0,0,0,0.08); }
+
+        /* --- Step 2: Texto e Fonte --- */
+        .input-group { width: 100%; max-width: 400px; margin-bottom: 30px; }
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-bottom: 2px solid var(--gray-light);
+            background: transparent;
+            font-size: 2rem;
+            text-align: center;
+            outline: none;
+            transition: font-family 0.2s ease, border-color 0.3s ease;
+        }
+        input[type="text"]:focus { border-color: var(--accent-color); }
+
+        .font-options { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        .font-btn {
+            padding: 12px 24px;
+            background: white;
+            border: 1px solid var(--gray-light);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            min-width: 100px;
+            transition: var(--transition);
+        }
+        .font-btn:hover { border-color: #999; }
+        .font-btn.selected { background: var(--accent-color); color: white; border-color: var(--accent-color); }
+
+        /* --- Step 4: Position --- */
+        .position-options { display: flex; gap: 20px; width: 100%; justify-content: center; }
+        .pos-btn {
+            flex: 1;
+            padding: 40px;
+            background: white;
+            border: 2px solid var(--gray-light);
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            transition: var(--transition);
+            max-width: 200px;
+        }
+        .pos-btn.selected { border-color: var(--accent-color); background: #f8f8f8; }
+
+        /* --- Navigation --- */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 50px;
+            padding: 20px 0;
+        }
+        .btn-nav {
+            padding: 12px 30px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        .btn-next { background: var(--accent-color); color: white; border-radius: 8px; }
+        .btn-next:disabled { background: var(--gray-light); cursor: not-allowed; opacity: 0.7; }
+        .btn-back { color: var(--gray-text); }
+
+        /* --- Loader --- */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--accent-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">Bracel Celulares</div>
+    </header>
+
+    <div id="landing" class="view active">
+        <h1>Personalize seu Stanley<br>Exclusivo</h1>
+        <p class="subtitle">Simule gravação a laser e veja como fica antes de comprar.</p>
+        <button class="btn-cta" onclick="startApp()">Começar Agora</button>
+    </div>
+
+    <div id="app-container">
+        
+        <div class="progress-wrapper">
+            <div class="progress-label">Passo <span id="current-step-num">1</span> de 4</div>
+            <div class="progress-track">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+        </div>
+
+        <div id="step-1" class="view">
+            <h2 class="step-title">Escolha a cor do copo</h2>
+            <div class="grid-options" id="cup-grid">
+                </div>
+            <div class="nav-buttons">
+                <button class="btn-nav btn-back" style="visibility: hidden;">Voltar</button>
+                <button class="btn-nav btn-next" id="btn-next-1" onclick="goNext()" disabled>Próximo</button>
+            </div>
+        </div>
+
+        <div id="step-2" class="view">
+            <h2 class="step-title">Digite seu texto</h2>
+            
+            <div class="input-group">
+                <input type="text" id="user-text" placeholder="Seu nome aqui" maxlength="20" autocomplete="off">
+            </div>
+
+            <p style="margin-bottom: 15px; color: #666; font-size: 0.9rem;">Escolha a tipografia:</p>
+            <div class="font-options" id="font-list">
+                </div>
+
+            <div class="nav-buttons">
+                <button class="btn-nav btn-back" onclick="goBack()">Voltar</button>
+                <button class="btn-nav btn-next" id="btn-next-2" onclick="goNext()" disabled>Próximo</button>
+            </div>
+        </div>
+
+        <div id="step-3" class="view">
+            <h2 class="step-title">Adicionar um desenho?</h2>
+            <div class="grid-options" id="icon-grid">
+                </div>
+            <div class="nav-buttons">
+                <button class="btn-nav btn-back" onclick="goBack()">Voltar</button>
+                <button class="btn-nav btn-next" id="btn-next-3" onclick="goNext()" disabled>Próximo</button>
+            </div>
+        </div>
+
+        <div id="step-4" class="view">
+            <h2 class="step-title">Onde gravar?</h2>
+            <div class="position-options">
+                <div class="pos-btn" onclick="selectPosition('top', this)">Parte de Cima</div>
+                <div class="pos-btn" onclick="selectPosition('bottom', this)">Parte de Baixo</div>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn-nav btn-back" onclick="goBack()">Voltar</button>
+                <button class="btn-nav btn-next" id="btn-next-4" onclick="finishProcess()" disabled>Ver como o copo vai ficar</button>
+            </div>
+        </div>
+
+        <div id="step-final" class="view">
+            <div class="loader"></div>
+            <h3>Gerando imagem realista...</h3>
+            <p style="color: #666; margin-top: 10px;">Aguarde enquanto nossa IA prepara seu copo.</p>
+        </div>
+
+    </div>
+
+    <script>
+        // --- DADOS ---
+        const cups = [
+            { id: 1, name: 'Verde', img: 'https://www.stanley1913.com.br/cdn/shop/files/285298-8.jpg?v=1719250664&width=990' },
+            { id: 2, name: 'Branco', img: 'https://images.tcdn.com.br/img/img_prod/487343/copo_termico_473ml_branco_08030_11144_stanley_4171_2_18b6aa17e3e8285b10b8cd5833749f1f_20251006122337.jpg' },
+            { id: 3, name: 'Preto Matte', img: 'https://m.media-amazon.com/images/I/719UoxO5pjL._AC_UF350,350_QL80_.jpg' }
+        ];
+
+        const fontList = [
+            { label: 'Playwrite', css: "'Playwrite CZ', cursive" },
+            { label: 'Poppins', css: "'Poppins', sans-serif" },
+            { label: 'Roboto', css: "'Roboto Slab', serif" },
+            { label: 'Stack', css: "'Stack Sans Notch', 'Arial Black', sans-serif" },
+            { label: 'Orbitron', css: "'Orbitron', sans-serif" }
+        ];
+
+        const icons = [
+            { id: 'none', name: 'Nenhum', img: '' },
+            { id: 'butterfly', name: 'Borboleta', img: "https://thumbs.dreamstime.com/b/arte-do-tipo-flickr-vetor-de-borboleta-simples-um-desenho-preto-e-branco-uma-imagem-vetorial-sobre-fundo-com-iconografia-flex%C3%A3o-293878384.jpg" },
+            { id: 'skull', name: 'Caveira', img: "https://media.istockphoto.com/id/928418862/pt/vetorial/skull-and-bones-icon.jpg?s=612x612&w=0&k=20&c=aRa2CPnvwMGBXrOIxeYvqI_KQgEBtq0M_MFvJYzSFHA=" },
+            { id: 'star', name: 'Estrela', img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZVPH00PU6kSHD4lGc2bar5kl-kYo3dEI2JTif_5x-ddapuVfVrSWS2OSfJC1ImtWVSZ8&usqp=CAU" },
+            { id: 'spfc', name: 'São Paulo', img: "https://images.seeklogo.com/logo-png/36/2/sao-paulo-futebol-clube-logo-png_seeklogo-363696.png" }
+        ];
+
+        // --- ESTADO ---
+        let state = { step: 1, selectedCup: null, text: '', font: fontList[0].css, selectedIcon: null, position: null };
+
+        // --- DOM Elements ---
+        const textInput = document.getElementById('user-text');
+        const btnNext2 = document.getElementById('btn-next-2');
+
+        // --- INIT ---
+        function init() {
+            renderCups();
+            renderFonts();
+            renderIcons();
+            textInput.style.fontFamily = state.font;
+        }
+
+        // --- RENDER FUNCTIONS ---
+        function renderCups() {
+            document.getElementById('cup-grid').innerHTML = cups.map(cup => `
+                <div class="card" onclick="selectCup(${cup.id}, this)">
+                    <img src="${cup.img}" alt="${cup.name}">
+                    <span>${cup.name}</span>
+                </div>
+            `).join('');
+        }
+
+        function renderFonts() {
+            // CORREÇÃO: Usando data-font para evitar erro de aspas conflitantes
+            document.getElementById('font-list').innerHTML = fontList.map((f, index) => `
+                <button class="font-btn ${index === 0 ? 'selected' : ''}" 
+                        style="font-family: ${f.css}" 
+                        data-font="${f.css}"
+                        onclick="handleFontSelection(this)">
+                    ${f.label}
+                </button>
+            `).join('');
+        }
+
+        function renderIcons() {
+            document.getElementById('icon-grid').innerHTML = icons.map(icon => `
+                <div class="card" onclick="selectIcon('${icon.id}', this)">
+                    ${icon.img ? `<img src="${icon.img}" alt="${icon.name}" style="filter: grayscale(100%);">` : `<div style="height:180px; display:flex; align-items:center; justify-content:center; background:#f4f4f4; border-radius:8px; margin-bottom:10px; font-weight:bold; color:#ccc;">SEM ÍCONE</div>`}
+                    <span>${icon.name}</span>
+                </div>
+            `).join('');
+        }
+
+        // --- LOGIC ---
+        function startApp() {
+            document.getElementById('landing').classList.remove('active');
+            document.getElementById('app-container').style.display = 'flex';
+            document.getElementById('step-1').classList.add('active');
+            updateProgress();
+        }
+
+        function goNext() {
+            if (state.step < 4) {
+                document.getElementById(`step-${state.step}`).classList.remove('active');
+                state.step++;
+                document.getElementById(`step-${state.step}`).classList.add('active');
+                updateProgress();
+            }
+        }
+
+        function goBack() {
+            if (state.step > 1) {
+                document.getElementById(`step-${state.step}`).classList.remove('active');
+                state.step--;
+                document.getElementById(`step-${state.step}`).classList.add('active');
+                updateProgress();
+            }
+        }
+
+        function updateProgress() {
+            const percent = ((state.step - 1) / 3) * 100;
+            document.getElementById('progress-fill').style.width = `${percent}%`;
+            document.getElementById('current-step-num').innerText = state.step;
+        }
+
+        // --- SELECTIONS ---
+        window.selectCup = (id, cardElem) => {
+            state.selectedCup = id;
+            document.querySelectorAll('#cup-grid .card').forEach(c => c.classList.remove('selected'));
+            cardElem.classList.add('selected');
+            document.getElementById('btn-next-1').disabled = false;
+        };
+
+        textInput.addEventListener('input', (e) => {
+            state.text = e.target.value;
+            btnNext2.disabled = state.text.length === 0;
+            if (textInput.style.fontFamily !== state.font) textInput.style.fontFamily = state.font;
+        });
+
+        // Nova função segura para lidar com clique na fonte
+        window.handleFontSelection = (btnElem) => {
+            const cssFamily = btnElem.getAttribute('data-font');
+            state.font = cssFamily;
+            document.querySelectorAll('.font-btn').forEach(b => b.classList.remove('selected'));
+            btnElem.classList.add('selected');
+            textInput.style.fontFamily = cssFamily;
+        };
+
+        window.selectIcon = (id, cardElem) => {
+            state.selectedIcon = id;
+            document.querySelectorAll('#icon-grid .card').forEach(c => c.classList.remove('selected'));
+            cardElem.classList.add('selected');
+            document.getElementById('btn-next-3').disabled = false;
+        };
+
+        window.selectPosition = (pos, btnElem) => {
+            state.position = pos;
+            document.querySelectorAll('.pos-btn').forEach(b => b.classList.remove('selected'));
+            btnElem.classList.add('selected');
+            document.getElementById('btn-next-4').disabled = false;
+        };
+
+        window.finishProcess = () => {
+            document.getElementById(`step-4`).classList.remove('active');
+            document.getElementById('step-final').classList.add('active');
+            console.log("Payload:", state);
+            setTimeout(() => {
+                //alert(`Copo: ${state.selectedCup}, Texto: ${state.text}, Fonte: ${state.font}, Ícone: ${state.selectedIcon}, Posição: ${state.position}`);
+                alert('A imagem viria agora')
+            }, 2500);
+        };
+
+        init();
+    </script>
+</body>
+</html>
