@@ -28,6 +28,7 @@
             flex-direction: column;
             min-height: 100vh;
             overflow-x: hidden;
+            scroll-behavior: smooth;
             align-items: center;
 	          justify-content: center;
         }
@@ -40,6 +41,9 @@
             justify-content: space-between;
             background: #fff;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
         .logo { font-weight: 700; font-size: 1.4rem; letter-spacing: -0.5px; text-transform: uppercase; }
 
@@ -52,6 +56,7 @@
             justify-content: center;
             width: 100%;
             padding: 20px;
+            padding-bottom: 80px; /* Espaço extra para o scroll não colar no fundo */
             animation: fadeIn 0.5s ease forwards;
         }
         .view.active { display: flex; }
@@ -173,6 +178,8 @@
             justify-content: space-between;
             width: 100%;
             padding: 20px 0;
+            /* Importante para o IntersectionObserver funcionar bem */
+            min-height: 60px; 
         }
         .btn-nav {
             padding: 12px 30px;
@@ -197,6 +204,47 @@
             margin-bottom: 20px;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- Botão Scroll Flutuante --- */
+        #scroll-down-fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background-color: var(--accent-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(10px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #scroll-down-fab.visible {
+            opacity: 1;
+            pointer-events: all;
+            transform: translateY(0);
+        }
+
+        #scroll-down-fab svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-5px);}
+            60% {transform: translateY(-3px);}
+        }
 
     </style>
 </head>
@@ -225,7 +273,7 @@
             <h2 class="step-title">Escolha a cor do copo</h2>
             <div class="grid-options" id="cup-grid">
                 </div>
-            <div class="nav-buttons">
+            <div class="nav-buttons" id="nav-1">
                 <button class="btn-nav btn-back" style="visibility: hidden;">Voltar</button>
                 <button class="btn-nav btn-next" id="btn-next-1" onclick="goNext()" disabled>Próximo</button>
             </div>
@@ -242,7 +290,7 @@
             <div class="font-options" id="font-list">
                 </div>
 
-            <div class="nav-buttons">
+            <div class="nav-buttons" id="nav-2">
                 <button class="btn-nav btn-back" onclick="goBack()">Voltar</button>
                 <button class="btn-nav btn-next" id="btn-next-2" onclick="goNext()" disabled>Próximo</button>
             </div>
@@ -252,7 +300,7 @@
             <h2 class="step-title">Adicionar um desenho?</h2>
             <div class="grid-options" id="icon-grid">
                 </div>
-            <div class="nav-buttons">
+            <div class="nav-buttons" id="nav-3">
                 <button class="btn-nav btn-back" onclick="goBack()">Voltar</button>
                 <button class="btn-nav btn-next" id="btn-next-3" onclick="goNext()" disabled>Próximo</button>
             </div>
@@ -264,9 +312,9 @@
                 <div class="pos-btn" onclick="selectPosition('top', this)">Parte de Cima</div>
                 <div class="pos-btn" onclick="selectPosition('bottom', this)">Parte de Baixo</div>
             </div>
-            <div class="nav-buttons">
+            <div class="nav-buttons" id="nav-4">
                 <button class="btn-nav btn-back" onclick="goBack()">Voltar</button>
-                <button class="btn-nav btn-next" id="btn-next-4" onclick="finishProcess()" disabled>Ver como o copo vai ficar</button>
+                <button class="btn-nav btn-next" id="btn-next-4" onclick="finishProcess()" disabled>Gerar Preview</button>
             </div>
         </div>
 
@@ -276,6 +324,12 @@
             <p style="color: #666; margin-top: 10px;">Aguarde enquanto nossa IA prepara seu copo.</p>
         </div>
 
+    </div>
+
+    <div id="scroll-down-fab" onclick="scrollToNav()">
+        <svg viewBox="0 0 24 24">
+            <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"></path>
+        </svg>
     </div>
 
     <script>
@@ -308,6 +362,8 @@
         // --- DOM Elements ---
         const textInput = document.getElementById('user-text');
         const btnNext2 = document.getElementById('btn-next-2');
+        const fab = document.getElementById('scroll-down-fab');
+        let observer; // Variável para o IntersectionObserver
 
         // --- INIT ---
         function init() {
@@ -315,7 +371,47 @@
             renderFonts();
             renderIcons();
             textInput.style.fontFamily = state.font;
+            initObserver(); // Inicia o observador
         }
+
+        // --- OBSERVER & SCROLL LOGIC ---
+        function initObserver() {
+            // Configura o IntersectionObserver
+            observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    // Se o menu de navegação ESTIVER visível (intersecting), esconde o FAB
+                    if (entry.isIntersecting) {
+                        fab.classList.remove('visible');
+                    } else {
+                        // Se não estiver visível, mostra o FAB
+                        fab.classList.add('visible');
+                    }
+                });
+            }, {
+                threshold: 0.1 // Dispara quando 10% do elemento é visível
+            });
+        }
+
+        function observeCurrentNav() {
+            // Para de observar o anterior
+            observer.disconnect();
+            
+            // Pega o container de botões da etapa atual
+            const currentNav = document.getElementById(`nav-${state.step}`);
+            if (currentNav) {
+                observer.observe(currentNav);
+            } else {
+                fab.classList.remove('visible'); // Esconde se não tiver nav (ex: final)
+            }
+        }
+
+        // Função chamada ao clicar no FAB
+        window.scrollToNav = () => {
+            const currentNav = document.getElementById(`nav-${state.step}`);
+            if (currentNav) {
+                currentNav.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        };
 
         // --- RENDER FUNCTIONS ---
         function renderCups() {
@@ -328,7 +424,6 @@
         }
 
         function renderFonts() {
-            // CORREÇÃO: Usando data-font para evitar erro de aspas conflitantes
             document.getElementById('font-list').innerHTML = fontList.map((f, index) => `
                 <button class="font-btn ${index === 0 ? 'selected' : ''}" 
                         style="font-family: ${f.css}" 
@@ -354,6 +449,9 @@
             document.getElementById('app-container').style.display = 'flex';
             document.getElementById('step-1').classList.add('active');
             updateProgress();
+            
+            // Pequeno delay para o DOM renderizar antes de observar
+            setTimeout(observeCurrentNav, 100);
         }
 
         function goNext() {
@@ -362,6 +460,10 @@
                 state.step++;
                 document.getElementById(`step-${state.step}`).classList.add('active');
                 updateProgress();
+                // Rola para o topo do novo passo
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                // Atualiza observador para os novos botões
+                setTimeout(observeCurrentNav, 100);
             }
         }
 
@@ -371,6 +473,8 @@
                 state.step--;
                 document.getElementById(`step-${state.step}`).classList.add('active');
                 updateProgress();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                setTimeout(observeCurrentNav, 100);
             }
         }
 
@@ -394,7 +498,6 @@
             if (textInput.style.fontFamily !== state.font) textInput.style.fontFamily = state.font;
         });
 
-        // Nova função segura para lidar com clique na fonte
         window.handleFontSelection = (btnElem) => {
             const cssFamily = btnElem.getAttribute('data-font');
             state.font = cssFamily;
@@ -418,12 +521,15 @@
         };
 
         window.finishProcess = () => {
+            // Desliga o observador para não aparecer botão no final
+            observer.disconnect();
+            fab.classList.remove('visible');
+
             document.getElementById(`step-4`).classList.remove('active');
             document.getElementById('step-final').classList.add('active');
             console.log("Payload:", state);
             setTimeout(() => {
-                //alert(`Copo: ${state.selectedCup}, Texto: ${state.text}, Fonte: ${state.font}, Ícone: ${state.selectedIcon}, Posição: ${state.position}`);
-                alert('A imagem viria agora')
+                alert(`Copo: ${state.selectedCup}, Texto: ${state.text}, Fonte: ${state.font}, Ícone: ${state.selectedIcon}, Posição: ${state.position}`);
             }, 2500);
         };
 
